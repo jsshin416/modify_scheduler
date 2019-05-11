@@ -251,6 +251,7 @@ var GetData = Parse.Object.extend("User_Diary");
         testObject[i].destroy();
         testObject[i].save();
         alert("삭제 되었습니다.");
+           location.reload();//새로고침 
        }
     }
   },(error)=>{
