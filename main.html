@@ -118,6 +118,7 @@ Parse.serverURL="https://polar-ocean-70851.herokuapp.com/parse"</script>
 <textarea id="memo" name="message" rows="15" cols="50" placeholder="여기에 적으세요"></textarea>
 
 <input type="button" class="save" value="저장" onclick="save_text()" >
+<input type="button" class="save" value="수정" onclick="modify_text()" >
 <input type="button" class="save" value="삭제" onclick="delete_text()" >
 
 </form>
@@ -143,7 +144,7 @@ get_data();
      //var c_date= c_yaer+"년" + c_month+"월"+c_day.text()+"일"
      $("#ex1").html(c_yaer+"년" + c_month+"월" +c_day.text()+"일");
      var c_date = $("#ex1").html();
-     modify_text(c_date);
+     get_text(c_date);
       });
   }
 
@@ -151,7 +152,7 @@ get_data();
 //query.addAscending("Month")
 //query.addAscending("Day")
 
-function modify_text(c_date){//클릭 날짜의 메모를 가져옴
+function get_text(c_date){//클릭 날짜의 메모를 가져옴
  var GetData = Parse.Object.extend("User_Diary");
   var query = new Parse.Query(GetData);
   query.equalTo("Username",Parse.User.current().get("username"))
@@ -173,33 +174,38 @@ var UserId = Parse.Object.extend("User_Diary");
 var userid = new UserId();
 var Memo = $("#memo").val(); //쓴 메모 가져오기
 var c_date = $("#ex1").html();//클릭된 날짜 가져오기 
-  
-   userid.set("Username",Parse.User.current().get("username"));
-  userid.set("Date", c_date);
-  userid.set("Memo", Memo);
-  userid.save();
-  alert("저장되었습니다");
-   location.reload();//새로고침 
-  
-var query = new Parse.Query(UserId);
- query.equalTo("Username",Parse.User.current().get("username"))
- query.find()
-.then(function(testObject){
-    for(var i=0; i<testObject.length; i++){ //서버 날짜가 같은게 있으면 이전 메모를 지우고 새로 저장
-       if(testObject[i].get("Date") == c_date){
-          var prememo = testObject[i].get("Memo");
-          testObject[i].set("Memo",Memo);
-          testObject[i].save();
-          alert("저장되었습니다.");
-          location.reload();//새로고침 
-         //var curmemo = testObject[i].get("Memo");
-       }
-    }
-  });
-
-
+ userid.set("Username",Parse.User.current().get("username"));
+    userid.set("Date", c_date);
+    userid.set("Memo", Memo);
+    userid.save();
+    alert("저장되었습니다");
+     location.reload();//새로고침 
 
 }
+
+function modify_text(){
+  var UserId = Parse.Object.extend("User_Diary");
+var userid = new UserId();
+var Memo = $("#memo").val(); //쓴 메모 가져오기
+var c_date = $("#ex1").html();//클릭된 날짜 가져오기 
+var query = new Parse.Query(UserId);
+query.equalTo("Username",Parse.User.current().get("username"))
+ query.find()
+.then(function(testObject){
+     for(var i=0; i<testObject.length; i++){ //서버 날짜가 같은게 있으면 이전 메모를 지우고 새로 저장
+       if(testObject[i].get("Date") == c_date){
+        var prememo = testObject[i].get("Memo");
+        testObject[i].set("Memo",Memo);
+          testObject[i].save();
+          alert("수정되었습니다.");
+          location.reload();//새로고침 
+        // var curmemo = testObject[i].get("Memo");
+       }
+     }
+
+    });
+}
+
 
 
 
@@ -251,7 +257,7 @@ var GetData = Parse.Object.extend("User_Diary");
         testObject[i].destroy();
         testObject[i].save();
         alert("삭제 되었습니다.");
-           location.reload();//새로고침 
+         location.reload();//새로고침
        }
     }
   },(error)=>{
@@ -267,4 +273,5 @@ document.getElementById('field').removeChild(obj.parentNode);
 </script>
 </body>
 </html>
+ 
  
