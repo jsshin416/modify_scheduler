@@ -173,6 +173,14 @@ var UserId = Parse.Object.extend("User_Diary");
 var userid = new UserId();
 var Memo = $("#memo").val(); //쓴 메모 가져오기
 var c_date = $("#ex1").html();//클릭된 날짜 가져오기 
+  
+   userid.set("Username",Parse.User.current().get("username"));
+  userid.set("Date", c_date);
+  userid.set("Memo", Memo);
+  userid.save();
+  alert("저장되었습니다");
+   location.reload();//새로고침 
+  
 var query = new Parse.Query(UserId);
  query.equalTo("Username",Parse.User.current().get("username"))
  query.find()
@@ -185,14 +193,6 @@ var query = new Parse.Query(UserId);
           alert("저장되었습니다.");
           location.reload();//새로고침 
          //var curmemo = testObject[i].get("Memo");
-       }
-       else{//서버에 같은 날짜가 없으면 새로 저장 
-        userid.set("Username",Parse.User.current().get("username"));
-        userid.set("Date", c_date);
-        userid.set("Memo", Memo);
-        userid.save();
-        alert("저장되었습니다");
-         location.reload();//새로고침 
        }
     }
   });
