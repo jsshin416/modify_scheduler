@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<meta name ="description" content="My Parse App">
+  <meta name ="viewport" content="width=device-width">
+  <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="https://npmcdn.com/parse/dist/parse.min.js"> </script>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+<style type="text/css">
+   #todolist{
+      border:1px solid #5F00FF;
+      border-radius:8px;
+      width:300px;
+      height:700px;
+      text-align: center;
+      float: left;
+      margin-left: auto;
+     }
+
+td,th{
+    width: 60px; 
+    height:60px;
+    font-family: 굴림체;
+    text-align: center;
+    font-size: 20px;
+    border:2px dotted #5F00FF;
+    border-radius:8px;
+  }
+#set{
+  
+}
+
+ #log-out{
+  margin-left: auto;
+      margin-right: auto;
+      text-align: center; 
+ }  
+
+  #text{ 
+      border:2px solid #5F00FF;
+      border-radius:8px;
+      width:550px;
+      height:700px;
+       margin-left: 50px;
+       float: left;
+      text-align: center; 
+     }   
+     textarea{
+      border:2px solid #5F00FF;
+      border-radius:8px;
+      width:500px;
+      height:400px;
+       float: left;
+       margin-left: 20px;
+        margin-right: 20px;
+      
+    
+     }
+ .back{
+  background-color: white;
+  border: 1px solid black;
+  margin-top: 25px;
+ }
+ 
+</style>
+</head>
+
+<body>
+<script type="text/javascript">
+ Parse.initialize("ShinJiSung");
+Parse.serverURL="https://polar-ocean-70851.herokuapp.com/parse"</script>
+<div id= "set">
+<h1 align="center">Calender</h1>
+<div align="center"><input id="log-out" type="button" value="로그아웃" onclick="logout()"></div>
+
+<div class="row">
+<table id="calendar" align="center">
+  <thead>
+ <tr>
+      <td><label onclick="prevCalendar()"><</label></td> 
+      <td colspan="5" align="center" id="calendarYM">yyyy년 m월</td>
+      <td><label onclick="nextCalendar()">>
+         
+        </label></td>
+      </tr>
+   </thead> 
+   <tbody>
+   <tr style=" font-size: 150%; background-color:#B5B2FF">
+      <th style="color: red">일</th>
+      <th>월</th>
+      <th>화</th>
+      <th>수</th>
+      <th>목</th>
+      <th>금</th>
+      <th style="color: blue">토</th>
+    </tr>
+    </tbody>
+</table>
+</div>
+</div>
+<div id= "todolist">
+    <h2>할 일</h2>
+    <form>
+ <label>
+ <label><div id="pre_set" style="display:none">    
+ <input type="checkbox" id="make" value="체크박스" ><label id="demo"></label></label>
+ </div>
+  <div id="field"></div>
+  </form>
+</div>
+
+<div>
+    <form id= "text" > 
+      <h1 align="center">Memo</h1>
+
+날짜: <div id="ex1" align="center"></div>
+<textarea id="memo" name="message" rows="15" cols="50" placeholder="여기에 적으세요"></textarea>
+
+<input type="button" class="save" value="저장" onclick="save_text()" >
+<input type="button" class="save" value="삭제" onclick="delete_text()" >
+
+</form>
+</div>
+
+<script type="text/javascript" src="calender.js"></script>
+<script language="javascript" type="text/javascript">
+  function logout(){
+    Parse.User.logOut();
+    window.location = "signin.html";
+    }
+buildCalendar();
+get_date();
+get_data();
+
+
+ function get_date(){//날짜를 가져옴(날짜를 불러오는게 잘못 만들어져서 현재 날짜가 있는 달만 사용 할 수 있음)
+    var c_yaer = today.getFullYear();
+    var c_month = today.getMonth()+1;
+    //var move = $("#calendarYM").text();
+    $("#calendar tbody td").click(function(){//클릭 날짜 불러오기
+     var  c_day = $(this);
+     //var c_date= c_yaer+"년" + c_month+"월"+c_day.text()+"일"
+     $("#ex1").html(c_yaer+"년" + c_month+"월" +c_day.text()+"일");
+     var c_date = $("#ex1").html();
+     modify_text(c_date);
+      });
+  }
+
+//query.addAscending("Year")
+//query.addAscending("Month")
+//query.addAscending("Day")
+
+function modify_text(c_date){//클릭 날짜의 메모를 가져옴
+ var GetData = Parse.Object.extend("User_Diary");
+  var query = new Parse.Query(GetData);
+  query.equalTo("Username",Parse.User.current().get("username"))
+  query.find()
+  .then(function(testObject){
+    for(var i=0; i<testObject.length; i++){
+       if(c_date == testObject[i].get("Date")){
+          var d_memo = testObject[i].get("Memo");
+          document.getElementById("memo").innerHTML = d_memo;
+       }
+    }
+     
+
+  });
+}
+
+function save_text(){//서버에 내용 저장
+var UserId = Parse.Object.extend("User_Diary");
+var userid = new UserId();
+var Memo = $("#memo").val(); //쓴 메모 가져오기
+var c_date = $("#ex1").html();//클릭된 날짜 가져오기 
+var query = new Parse.Query(UserId);
+ query.equalTo("Username",Parse.User.current().get("username"))
+ query.find()
+.then(function(testObject){
+    for(var i=0; i<testObject.length; i++){ //서버 날짜가 같은게 있으면 이전 메모를 지우고 새로 저장
+       if(testObject[i].get("Date") == c_date){
+          var prememo = testObject[i].get("Memo");
+          testObject[i].set("Memo",Memo);
+          testObject[i].save();
+          alert("저장되었습니다.");
+          location.reload();//새로고침 
+         //var curmemo = testObject[i].get("Memo");
+       }
+       else{//서버에 같은 날짜가 없으면 새로 저장 
+        userid.set("Username",Parse.User.current().get("username"));
+        userid.set("Date", c_date);
+        userid.set("Memo", Memo);
+        userid.save();
+        alert("저장되었습니다");
+         location.reload();//새로고침 
+       }
+    }
+  });
+
+
+
+}
+
+
+
+
+function add_item(){//체크박스 추가(새로 고침 해야 볼 수 있음)
+    // pre_set 에 있는 내용을 읽어와서 처리..
+    var div = document.createElement('div');
+    div.innerHTML = document.getElementById('pre_set').innerHTML;
+    document.getElementById('field').appendChild(div);
+
+
+  }
+
+function get_data(){//서버 메모 가져와서 할일에 추가
+  var GetData = Parse.Object.extend("User_Diary");
+  var query = new Parse.Query(GetData);
+  query.equalTo("Username",Parse.User.current().get("username"))
+  query.find()
+  .then(function(datas){
+    for(var i=0; i<datas.length; i++){
+         var data = datas[i];
+        var g_date = data.get("Date");
+        var g_memo = data.get("Memo");
+      document.getElementById("demo").innerHTML = g_date+'<br>'+g_memo+'</dr>'; 
+     add_item();
+
+    }
+  
+  });
+}
+
+
+
+
+function delete_text(){//삭제 (행 삭제)
+var GetData = Parse.Object.extend("User_Diary");
+  var query = new Parse.Query(GetData);
+  var c_date = $("#ex1").html();
+   /*$("#make:checked").each(function(){
+      var test = $(this).val();//체크된 값 test에 저장 date+ memo
+      
+    });*/
+  query.equalTo("Username",Parse.User.current().get("username"))
+  //query.equalTo("Date",c_date)
+  query.find()
+  .then(function(testObject){
+    for(var i=0; i<testObject.length; i++){
+       if(testObject[i].get("Date") == c_date){
+        testObject[i].destroy();
+        testObject[i].save();
+        alert("삭제 되었습니다.");
+       }
+    }
+  },(error)=>{
+   alert("삭제에 실패:"+ error.message);
+  });
+}
+/*function remove_item(obj){ //삭제
+    // obj.parentNode 를 이용하여 삭제
+document.getElementById('field').removeChild(obj.parentNode);
+
+}*/
+
+</script>
+</body>
+</html>
+ 
